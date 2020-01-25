@@ -5,11 +5,8 @@
 	"main": "server.js",
 	"scripts": {
 		"tsc": "tsc",
-		"precompile": "rm -r build || true",
-		"compile": "npm run tsc",
 		"postinstall": "npm run tsc && cp ./src/index.html ./build/index.html",
 		"watch:development": "nodemon",
-		"build": "rm -rf ./build/ && tsc",
 		"start": "node build/server.js",
 		"commit": "git add . && git cz"
 	},

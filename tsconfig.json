@@ -1,0 +1,27 @@
+{
+	"compilerOptions": {
+		"target": "es6",
+		"module": "commonjs",
+		"declaration": false,
+		"noImplicitAny": false,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"alwaysStrict": true,
+		"strictNullChecks": true,
+		"allowJs": true,
+		"removeComments": true,
+		"noLib": false,
+		"preserveConstEnums": true,
+		"sourceMap": true,
+		"suppressImplicitAnyIndexErrors": true,
+		"allowSyntheticDefaultImports": true,
+		"importHelpers": true,
+		"outDir": "build",
+		"moduleResolution": "node",
+		"baseUrl": "./src",
+		"esModuleInterop": true
+	},
+	"compileOnSave": false,
+	"buildOnSave": false,
+	"exclude": ["node_modules"]
+}

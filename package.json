@@ -5,12 +5,12 @@
 	"main": "server.js",
 	"scripts": {
 		"tsc": "tsc",
-		"precompile": "rm -r dist || true",
+		"precompile": "rm -r build || true",
 		"compile": "npm run tsc",
 		"postinstall": "npm run tsc",
 		"watch:development": "nodemon",
-		"build": "rm -rf ./dist/ && tsc",
-		"start": "node dist/server.js",
+		"build": "rm -rf ./build/ && tsc",
+		"start": "node build/server.js",
 		"commit": "git add . && git cz"
 	},
 	"keywords": [

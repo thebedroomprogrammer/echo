@@ -11,7 +11,7 @@ const twilioClient = twilio(TWILIO_SID, TWILIO_AUTH_TOKEN);
 
 app.use(bodyParser.json());
 
-server.listen(3000);
+server.listen(process.env.PORT);
 const io = socketIO(server);
 
 let users: { socketId: string; userName: string }[] = [];

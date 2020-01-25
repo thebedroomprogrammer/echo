@@ -54,14 +54,12 @@
 	<body>
 		<div id="login">
 			<input id="userName" placeholder="user name" type="text" />
-			<button onclick="connectSocket()">TRY</button>
+			<button onclick="connectSocket()">login</button>
 		</div>
 		<div style="display:none;" id="board">
 			<audio id="audioPlayer" autoplay controls></audio>
-			<button onclick="getUserMedia()" id="getMedia">Get media</button>
 			<input id="callTo" placeholder="call to" type="text" />
 			<button onclick="makeCall()" id="makeCall">Make Call</button>
-			<button onclick="makeCalls()" id="makeCalls">Make Calls</button>
 		</div>
 		<script src="/socket.io/socket.io.js"></script>
 		<script>
@@ -78,7 +76,7 @@
 					return alert("You are connected dumbass");
 				}
 				const response = await fetch(
-					`http://192.168.1.6:3000/connect?userName=${document.getElementById("userName").value}`,
+					`https://echo-land.herokuapp.com/connect?userName=${document.getElementById("userName").value}`,
 				);
 				const data = await response.json();
 				if (data.status) {
@@ -92,7 +90,7 @@
 
 					socket.on("incomingCall", async offerData => {
 						console.log("incoming call with offer", offerData);
-						const response = await fetch(`http://192.168.1.6:3000/breakTheIce`);
+						const response = await fetch(`https://echo-land.herokuapp.com/breakTheIce`);
 						const data = await response.json();
 
 						window.iceConfig = data.config;
@@ -165,7 +163,7 @@
 					voiceActivityDetection: false,
 				};
 				console.log("getting servers");
-				const response = await fetch(`http://192.168.1.6:3000/breakTheIce`);
+				const response = await fetch(`https://echo-land.herokuapp.com/breakTheIce`);
 				const data = await response.json();
 				window.iceConfig = data.config;
 				console.log("server config", data.config);

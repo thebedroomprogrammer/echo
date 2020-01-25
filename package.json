@@ -5,15 +5,12 @@
 	"main": "server.js",
 	"scripts": {
 		"tsc": "tsc",
-		"precompile": "rm -r build || true",
+		"precompile": "rm -r dist || true",
 		"compile": "npm run tsc",
+		"postinstall": "npm run tsc",
 		"watch:development": "nodemon",
-		"build:development": "rm -rf ./build/ && tsc",
-		"start:development": "node build/server.js",
-		"build:staging": "rm -rf ./build/ && tsc",
-		"start:staging": "node build/server.js",
-		"build:production": "rm -rf ./build/ && tsc",
-		"start:production": "node build/server.js",
+		"build": "rm -rf ./dist/ && tsc",
+		"start": "node dist/server.js",
 		"commit": "git add . && git cz"
 	},
 	"keywords": [

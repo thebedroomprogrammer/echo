@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>Socket.IO chat</title>
+		<title>Echo</title>
 		<style>
 			* {
 				margin: 0;
@@ -57,7 +57,7 @@
 			<button onclick="connectSocket()">login</button>
 		</div>
 		<div style="display:none;" id="board">
-			<audio id="audioPlayer" autoplay controls></audio>
+			<audio style="display: none;" id="audioPlayer" autoplay controls></audio>
 			<input id="callTo" placeholder="call to" type="text" />
 			<button onclick="makeCall()" id="makeCall">Make Call</button>
 		</div>

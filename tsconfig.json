@@ -17,6 +17,5 @@
 	},
 	"compileOnSave": false,
 	"buildOnSave": false,
-	"exclude": ["node_modules"],
-	"include": ["index.html"]
+	"exclude": ["node_modules"]
 }

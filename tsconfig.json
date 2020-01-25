@@ -8,17 +8,14 @@
 		"noUnusedParameters": true,
 		"alwaysStrict": true,
 		"strictNullChecks": true,
-		"allowJs": false,
 		"removeComments": true,
 		"noLib": false,
 		"preserveConstEnums": true,
 		"sourceMap": false,
 		"suppressImplicitAnyIndexErrors": true,
 		"allowSyntheticDefaultImports": true,
-		"importHelpers": true,
 		"outDir": "build",
-		"baseUrl": "./src/",
-		"esModuleInterop": true
+		"baseUrl": "./src/"
 	},
 	"compileOnSave": false,
 	"buildOnSave": false,

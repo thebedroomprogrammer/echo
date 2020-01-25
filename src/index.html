@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Socket.IO chat</title>
+		<style>
+			* {
+				margin: 0;
+				padding: 0;
+				box-sizing: border-box;
+			}
+
+			body {
+				font: 13px Helvetica, Arial;
+			}
+
+			form {
+				background: #000;
+				padding: 3px;
+				position: fixed;
+				bottom: 0;
+				width: 100%;
+			}
+
+			form input {
+				border: 0;
+				padding: 10px;
+				width: 90%;
+				margin-right: 0.5%;
+			}
+
+			form button {
+				width: 9%;
+				background: rgb(130, 224, 255);
+				border: none;
+				padding: 10px;
+			}
+
+			#messages {
+				list-style-type: none;
+				margin: 0;
+				padding: 0;
+			}
+
+			#messages li {
+				padding: 5px 10px;
+			}
+
+			#messages li:nth-child(odd) {
+				background: #eee;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div id="login">
+			<input id="userName" placeholder="user name" type="text" />
+			<button onclick="connectSocket()">TRY</button>
+		</div>
+		<script src="/socket.io/socket.io.js"></script>
+		<script>
+			window.connected = false;
+			async function connectSocket() {
+				if (window.connected) {
+					return alert("You are connected dumbass");
+				}
+				const response = await fetch(
+					`http://localhost:3000/connect?userName=${document.getElementById("userName").value}`,
+				);
+				const data = await response.json();
+				if (data.status) {
+					window.connected = true;
+					var socket = io(window.location.origin, { query: { userName: document.getElementById("userName").value } });
+					window.userName = document.getElementById("userName").value;
+					document.getElementById("login").style.display = "none";
+				} else {
+					alert("user exists fuck you");
+				}
+			}
+		</script>
+	</body>
+</html>

@@ -57,7 +57,7 @@
 			<button onclick="connectSocket()">TRY</button>
 		</div>
 		<div style="display:none;" id="board">
-			<!-- <audio id="audioPlayer" autoplay controls></audio> -->
+			<audio id="audioPlayer" autoplay controls></audio>
 			<button onclick="getUserMedia()" id="getMedia">Get media</button>
 			<input id="callTo" placeholder="call to" type="text" />
 			<button onclick="makeCall()" id="makeCall">Make Call</button>
@@ -69,11 +69,16 @@
 			window.gotUserMedia = false;
 			window.userStream;
 			async function connectSocket() {
+				const offerOptions = {
+					offerToReceiveAudio: 1,
+					offerToReceiveVideo: 0,
+					voiceActivityDetection: false,
+				};
 				if (window.connected) {
 					return alert("You are connected dumbass");
 				}
 				const response = await fetch(
-					`http://localhost:3000/connect?userName=${document.getElementById("userName").value}`,
+					`http://192.168.1.6:3000/connect?userName=${document.getElementById("userName").value}`,
 				);
 				const data = await response.json();
 				if (data.status) {
@@ -86,33 +91,53 @@
 					document.getElementById("board").style.display = "block";
 
 					socket.on("incomingCall", async offerData => {
-						const response = await fetch(`http://localhost:3000/breakTheIce`);
+						console.log("incoming call with offer", offerData);
+						const response = await fetch(`http://192.168.1.6:3000/breakTheIce`);
 						const data = await response.json();
+
 						window.iceConfig = data.config;
-						console.log(data);
+
+						console.log("got ice data", data.config);
 						const peerConnection = new RTCPeerConnection({ iceServers: data.config.iceServers });
+						const remoteStream = new MediaStream();
+						const remoteAudio = document.getElementById("audioPlayer");
+						remoteAudio.srcObject = remoteStream;
+
+						peerConnection.addEventListener("track", async event => {
+							remoteStream.addTrack(event.track, remoteStream);
+						});
 						peerConnection.addEventListener("icecandidate", event => {
-							console.log("asdjkhasjdhjkashdjkhsajajhdgjhagsjdhgajdgjhagdhjgashjdgajhdgjhgsdjkhs");
+							console.log("ice candidate event on callee");
+							console.log(event.candidate);
 							if (event.candidate) {
-								socket.emit("newIceCandidate", {
-									candidate: event.candidate,
-									sendTo: document.getElementById("callTo").value,
-								});
+								socket.emit("newIceCandidate", { candidate: event.candidate, sendTo: offerData.callFrom });
+								console.log("new ice candidate sent");
 							}
 						});
 						peerConnection.addEventListener("connectionstatechange", event => {
-							console.log("ashdkjashdjkhasjkdhajkdhjkahdjkasd,anm,zm,x,ccxzzxczxc");
+							console.log(event);
 							if (peerConnection.connectionState === "connected") {
-								console.log("peers connected");
+								console.log("peers connected=========================================");
 							}
 						});
-						peerConnection.setRemoteDescription(new RTCSessionDescription(offerData.offer));
-						const answer = await peerConnection.createAnswer();
+						console.log("peer connection created", peerConnection);
+						peerConnection.setRemoteDescription(offerData.offer);
+						console.log("remote description set");
+						console.log("getting user media");
+						const localStream = await getUserMedia();
+						console.log("got user media");
+						const audioTracks = localStream.getAudioTracks();
+						localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+						console.log("Adding Local Stream to peer connection");
+						const answer = await peerConnection.createAnswer(offerOptions);
+						console.log("anwer created", answer);
 						await peerConnection.setLocalDescription(answer);
+						console.log("answer set in local desc");
 
 						socket.emit("answerIncomingCall", { answer, answerTo: offerData.callFrom, answerFrom: offerData.callTo });
-
+						console.log("incoming call answered");
 						socket.on("incomingIceCandidate", async data => {
+							console.log("incoming call ice candidate", data);
 							await peerConnection.addIceCandidate(data.candidate);
 						});
 					});
@@ -126,8 +151,7 @@
 					try {
 						window.gotUserMedia = true;
 						const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-						// const audioElement = document.getElementById('audioPlayer');
-						// audioElement.srcObject = stream;
+						return stream;
 					} catch (err) {
 						console.log("error in getting user media", err);
 					}
@@ -135,35 +159,68 @@
 			}
 
 			async function makeCall() {
-				const response = await fetch(`http://localhost:3000/breakTheIce`);
+				const offerOptions = {
+					offerToReceiveAudio: 1,
+					offerToReceiveVideo: 0,
+					voiceActivityDetection: false,
+				};
+				console.log("getting servers");
+				const response = await fetch(`http://192.168.1.6:3000/breakTheIce`);
 				const data = await response.json();
 				window.iceConfig = data.config;
-				console.log(data);
+				console.log("server config", data.config);
 				const peerConnection = new RTCPeerConnection({ iceServers: data.config.iceServers });
+				console.log("created peer connection", peerConnection);
+				const remoteStream = new MediaStream();
+				const remoteAudio = document.getElementById("audioPlayer");
+				remoteAudio.srcObject = remoteStream;
+
+				peerConnection.addEventListener("track", async event => {
+					remoteStream.addTrack(event.track, remoteStream);
+				});
 				peerConnection.addEventListener("icecandidate", event => {
-					console.log("asdjkhasjdhjkashdjkhsajdjkhs");
+					console.log("ice candidate event on caller");
+					console.log(event.candidate);
 					if (event.candidate) {
 						socket.emit("newIceCandidate", {
 							candidate: event.candidate,
 							sendTo: document.getElementById("callTo").value,
 						});
+						console.log("new ice candidate sent");
 					}
 				});
 				peerConnection.addEventListener("connectionstatechange", event => {
+					console.log(event);
 					if (peerConnection.connectionState === "connected") {
-						console.log("peers connected");
+						console.log("peers connected=========================================");
 					}
 				});
 				socket.on("callAccepted", async callData => {
-					const remoteDesc = new RTCSessionDescription(callData.answer);
-					await peerConnection.setRemoteDescription(remoteDesc);
+					console.log("call got accepted", callData);
+					// const remoteDesc = new RTCSessionDescription(callData.answer);
+					console.log("answer set in remote desc", callData.answer);
+					await peerConnection.setRemoteDescription(callData.answer);
+					console.log("remote desc set");
 				});
-				const offer = await peerConnection.createOffer();
+				console.log("getting user media");
+				const localStream = await getUserMedia();
+				console.log("got user media");
+				const audioTracks = localStream.getAudioTracks();
+				localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+				console.log("Adding Local Stream to peer connection");
+				const offer = await peerConnection.createOffer(offerOptions);
+				console.log("offer created", offer);
 				await peerConnection.setLocalDescription(offer);
+				console.log("local description set");
 				socket.emit("connectCall", {
 					offer,
 					callTo: document.getElementById("callTo").value,
 					callFrom: window.userName,
+				});
+				console.log("offer send to user");
+				socket.on("incomingIceCandidate", async data => {
+					console.log("incoming call ice candidate", data);
+					await peerConnection.addIceCandidate(data.candidate);
 				});
 			}
 

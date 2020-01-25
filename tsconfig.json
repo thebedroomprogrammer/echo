@@ -13,7 +13,6 @@
 		"preserveConstEnums": true,
 		"sourceMap": false,
 		"suppressImplicitAnyIndexErrors": true,
-		"allowSyntheticDefaultImports": true,
 		"outDir": "build",
 		"baseUrl": "./src/"
 	},

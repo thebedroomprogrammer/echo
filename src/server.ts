@@ -1,8 +1,8 @@
-import express from "express";
-import http from "http";
-import bodyParser from "body-parser";
-import socketIO from "socket.io";
-import twilio from "twilio";
+import * as express from "express";
+import * as http from "http";
+import * as bodyParser from "body-parser";
+import * as socketIO from "socket.io";
+import * as twilio from "twilio";
 import { TWILIO_SID } from "./constants";
 import { TWILIO_AUTH_TOKEN } from "./constants";
 const app = express();

@@ -61,6 +61,9 @@
 			<input id="callTo" placeholder="call to" type="text" />
 			<button onclick="makeCall()" id="makeCall">Make Call</button>
 		</div>
+		<div style="display:none;" id="conn">
+			Call connected
+		</div>
 		<script src="/socket.io/socket.io.js"></script>
 		<script>
 			window.connected = false;
@@ -115,6 +118,9 @@
 						peerConnection.addEventListener("connectionstatechange", event => {
 							console.log(event);
 							if (peerConnection.connectionState === "connected") {
+								document.getElementById("board").style.display = "none";
+								document.getElementById("conn").style.display = "block";
+
 								console.log("peers connected=========================================");
 							}
 						});
@@ -190,6 +196,8 @@
 				peerConnection.addEventListener("connectionstatechange", event => {
 					console.log(event);
 					if (peerConnection.connectionState === "connected") {
+						document.getElementById("board").style.display = "none";
+						document.getElementById("conn").style.display = "block";
 						console.log("peers connected=========================================");
 					}
 				});

@@ -60,11 +60,11 @@ io.on("connection", function(socket: SocketIO.Socket) {
 	});
 });
 
-app.get("/", function(req, res) {
+app.get("/", function(_, res) {
 	res.sendFile(__dirname + "/index.html");
 });
 
-app.get("/breakTheIce", async function(req, res) {
+app.get("/breakTheIce", async function(_, res) {
 	res.send({ config: await getIceServerConfig() });
 });
 

@@ -144,6 +144,7 @@
 						console.log("incoming call ice candidate=====", incCandidate);
 						await peerConnection.addIceCandidate(incCandidate.candidate);
 					});
+
 					socket.on("userList", data => {
 						let html = `<tr><th>User Name</th><th>Status</th></tr>`;
 						if (document.getElementById("t01")) {
@@ -187,14 +188,14 @@
 						peerConnection.addEventListener("track", async event => {
 							remoteStream.addTrack(event.track, remoteStream);
 						});
-						// peerConnection.addEventListener("icecandidate", event => {
-						// 	console.log("ice candidate event on callee");
-						// 	console.log(event.candidate);
-						// 	if (event.candidate) {
-						// 		socket.emit("newIceCandidate", { candidate: event.candidate, sendTo: offerData.callFrom });
-						// 		console.log("new ice candidate sent");
-						// 	}
-						// });
+						peerConnection.addEventListener("icecandidate", event => {
+							console.log("ice candidate event on callee");
+							console.log(event.candidate);
+							if (event.candidate) {
+								socket.emit("newIceCandidate", { candidate: event.candidate, sendTo: offerData.callFrom });
+								console.log("new ice candidate sent");
+							}
+						});
 						peerConnection.addEventListener("connectionstatechange", event => {
 							console.log(event);
 							if (peerConnection.connectionState === "connected") {

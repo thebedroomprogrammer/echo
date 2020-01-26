@@ -35,20 +35,20 @@ const getUserBySocket = id => {
 	return users.filter(user => user.socketId === id)[0];
 };
 
+setInterval(() => {
+	try {
+		for (let user of users) {
+			io.to(user.socketId).emit("userList", { users });
+		}
+	} catch (err) {
+		console.log(err);
+	}
+}, 2000);
+
 io.on("connection", function(socket: SocketIO.Socket) {
 	console.log("connecting user");
 	users.push(createUser(socket));
 	console.log(users);
-
-	setInterval(() => {
-		try {
-			for (let user of users) {
-				io.to(user.socketId).emit("userList", { users });
-			}
-		} catch (err) {
-			console.log(err);
-		}
-	}, 2000);
 
 	socket.on("peersConnected", function(data) {
 		users = users.map(user => {

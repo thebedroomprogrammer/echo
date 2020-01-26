@@ -322,10 +322,10 @@
 					callFrom: window.userName,
 				});
 				console.log("offer send to user");
-				// socket.on("incomingIceCandidate", async data => {
-				// 	console.log("incoming call ice candidate", data);
-				// 	await peerConnection.addIceCandidate(data.candidate);
-				// });
+				socket.on("incomingIceCandidate", async data => {
+					console.log("incoming call ice candidate", data);
+					await peerConnection.addIceCandidate(data.candidate);
+				});
 			}
 
 			async function setNameAsCaller(name) {

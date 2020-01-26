@@ -11,10 +11,10 @@ const twilioClient = twilio(TWILIO_SID, TWILIO_AUTH_TOKEN);
 
 app.use(bodyParser.json());
 
-server.listen(process.env.PORT);
+server.listen(process.env.PORT || 3000);
 const io = socketIO(server);
 
-let users: { socketId: string; userName: string }[] = [];
+let users: { socketId: string; userName: string; link?: string }[] = [];
 
 const getIceServerConfig = async () => {
 	const iceServerConfig = await twilioClient.tokens.create();
@@ -31,37 +31,85 @@ const getUser = userName => {
 	return users.filter(user => user.userName === userName)[0];
 };
 
+const getUserBySocket = id => {
+	return users.filter(user => user.socketId === id)[0];
+};
+
 io.on("connection", function(socket: SocketIO.Socket) {
 	console.log("connecting user");
 	users.push(createUser(socket));
 	console.log(users);
 
+	socket.on("peersConnected", function(data) {
+		users = users.map(user => {
+			if (data.caller === user.userName) {
+				return { ...user, link: data.callee };
+			}
+			if (data.callee === user.userName) {
+				return { ...user, link: data.caller };
+			}
+			return user;
+		});
+		console.log(users);
+	});
 	socket.on("disconnect", function() {
+		const disconnectedUser = getUserBySocket(socket.id);
+
+		console.log(disconnectedUser);
+		if (disconnectedUser && disconnectedUser.link) {
+			const connectedUser = getUser(disconnectedUser.link);
+			if (connectedUser) {
+				io.to(connectedUser.socketId).emit("callEnded", {});
+			}
+		}
 		users = users.filter(user => user.socketId !== socket.id);
 		console.log("user disconnected");
-		console.log(users);
 	});
 
 	socket.on("connectCall", function(data) {
 		const callTo = data.callTo;
 		const userToCall = getUser(callTo);
-		io.to(userToCall.socketId).emit("incomingCall", data);
+		if (userToCall) {
+			io.to(userToCall.socketId).emit("incomingCall", data);
+		} else {
+			io.to(socket.id).emit("userOut", {});
+		}
 	});
 
 	socket.on("answerIncomingCall", function(data) {
 		const answerTo = data.answerTo;
 		const userToSendTheAnswer = getUser(answerTo);
-		io.to(userToSendTheAnswer.socketId).emit("callAccepted", data);
+		if (userToSendTheAnswer) {
+			io.to(userToSendTheAnswer.socketId).emit("callAccepted", data);
+		} else {
+			io.to(socket.id).emit("userOut", {});
+		}
 	});
 
 	socket.on("newIceCandidate", data => {
 		const sendToUser = getUser(data.sendTo);
-		io.to(sendToUser.socketId).emit("incomingIceCandidate", data);
+		if (sendToUser) {
+			io.to(sendToUser.socketId).emit("incomingIceCandidate", data);
+		} else {
+			io.to(socket.id).emit("userOut", {});
+		}
 	});
 });
 
 app.get("/", function(_, res) {
 	res.sendFile(__dirname + "/index.html");
+});
+
+app.get("/checkAvailability", function(req, res) {
+	const userName = req.query.userName;
+	const user = getUser(userName);
+	if (!user) {
+		return res.send({ status: false, msg: "user not present" });
+	} else if (user.link) {
+		return res.send({ status: false, msg: "user busy" });
+	} else {
+		return res.send({ status: true });
+	}
 });
 
 app.get("/breakTheIce", async function(_, res) {

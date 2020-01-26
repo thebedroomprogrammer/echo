@@ -11,7 +11,7 @@
 			}
 
 			.login-card {
-				width: 50%;
+				width: 70%;
 				display: flex;
 				flex-direction: column;
 				margin: 0 auto;
@@ -20,6 +20,48 @@
 				align-items: center;
 				justify-content: center;
 				background-color: #ededed;
+			}
+
+			.list-card {
+				width: 70%;
+				display: flex;
+				flex-direction: column;
+				margin: 0 auto;
+				margin-top: 10px;
+				padding: 10px;
+				align-items: center;
+				justify-content: center;
+				background-color: #ededed;
+			}
+
+			table {
+				width: 80%;
+			}
+
+			table,
+			th,
+			td {
+				border: 1px solid black;
+				border-collapse: collapse;
+			}
+
+			th,
+			td {
+				padding: 8px;
+				text-align: left;
+			}
+
+			table#t01 tr:nth-child(even) {
+				background-color: #eee;
+			}
+
+			table#t01 tr:nth-child(odd) {
+				background-color: #fff;
+			}
+
+			table#t01 th {
+				background-color: black;
+				color: white;
 			}
 
 			.input {
@@ -59,6 +101,9 @@
 			<input class="input" id="callTo" placeholder="CALL TO" type="text" />
 			<div class="connect" onclick="makeCall()" id="makeCall">CALL</div>
 		</div>
+		<div style="display:none;" class="list-card" id="list">
+			<table id="t01"></table>
+		</div>
 		<div class="login-card" style="display:none;" id="conn">
 			<div onclick="endCall()" class="connect">END CALL</div>
 		</div>
@@ -88,9 +133,27 @@
 					window.socket = io(window.location.origin, {
 						query: { userName: document.getElementById("userName").value },
 					});
+
+					socket.on("userList", data => {
+						let html = `<tr><th>User Name</th><th>Status</th></tr>`;
+						if (document.getElementById("t01")) {
+							for (let user of data.users) {
+								if (user.userName !== window.userName) {
+									html =
+										html +
+										`<tr onclick="window.setNameAsCaller('${user.userName}')"><td>${user.userName}</td><td>${
+											user.link ? "busy" : "free"
+										}</td></tr>`;
+								}
+							}
+							document.getElementById("t01").innerHTML = html;
+						}
+					});
+
 					window.userName = document.getElementById("userName").value;
 					document.getElementById("login").style.display = "none";
 					document.getElementById("board").style.display = "flex";
+					document.getElementById("list").style.display = "flex";
 					socket.on("userOut", () => {
 						if (!window.userOut) {
 							alert("User not present");
@@ -133,6 +196,7 @@
 							console.log(event);
 							if (peerConnection.connectionState === "connected") {
 								document.getElementById("board").style.display = "none";
+								document.getElementById("list").style.display = "none";
 								document.getElementById("conn").style.display = "flex";
 								socket.emit("peersConnected", { callee: window.userName, caller: offerData.callFrom });
 								console.log("peers connected=========================================");
@@ -177,6 +241,12 @@
 			}
 
 			async function makeCall() {
+				document.getElementById("makeCall").innerText = "CALLING...";
+				if (window.isCalling) {
+					alert("Already Calling.");
+				}
+				window.isCalling = true;
+
 				if (!document.getElementById("callTo").value || document.getElementById("callTo").value == window.userName) {
 					return alert("Goddamit! 🤦");
 				}
@@ -185,6 +255,8 @@
 				);
 				const resp = await checkAvailability.json();
 				if (resp.status === false) {
+					window.isCalling = false;
+					document.getElementById("makeCall").innerText = "CALL";
 					return alert(resp.msg);
 				}
 
@@ -193,6 +265,7 @@
 					offerToReceiveVideo: 0,
 					voiceActivityDetection: false,
 				};
+
 				console.log("getting servers");
 				const response = await fetch(`https://echo-land.herokuapp.com/breakTheIce`);
 				const data = await response.json();
@@ -222,6 +295,7 @@
 					console.log(event);
 					if (peerConnection.connectionState === "connected") {
 						document.getElementById("board").style.display = "none";
+						document.getElementById("list").style.display = "none";
 						document.getElementById("conn").style.display = "flex";
 						console.log("peers connected=========================================");
 					}
@@ -253,6 +327,10 @@
 					console.log("incoming call ice candidate", data);
 					await peerConnection.addIceCandidate(data.candidate);
 				});
+			}
+
+			async function setNameAsCaller(name) {
+				document.getElementById("callTo").value = name;
 			}
 
 			async function endCall() {

@@ -40,6 +40,16 @@ io.on("connection", function(socket: SocketIO.Socket) {
 	users.push(createUser(socket));
 	console.log(users);
 
+	setInterval(() => {
+		try {
+			for (let user of users) {
+				io.to(user.socketId).emit("userList", { users });
+			}
+		} catch (err) {
+			console.log(err);
+		}
+	}, 2000);
+
 	socket.on("peersConnected", function(data) {
 		users = users.map(user => {
 			if (data.caller === user.userName) {

@@ -80,7 +80,7 @@
 					return alert("You are connected dumbass");
 				}
 				const response = await fetch(
-					`http://localhost:3000/connect?userName=${document.getElementById("userName").value}`,
+					`https://echo-land.herokuapp.com/connect?userName=${document.getElementById("userName").value}`,
 				);
 				const data = await response.json();
 				if (data.status) {
@@ -107,7 +107,7 @@
 					});
 					socket.on("incomingCall", async offerData => {
 						console.log("incoming call with offer", offerData);
-						const response = await fetch(`http://localhost:3000/breakTheIce`);
+						const response = await fetch(`https://echo-land.herokuapp.com/breakTheIce`);
 						const data = await response.json();
 
 						window.iceConfig = data.config;
@@ -181,7 +181,7 @@
 					return alert("Goddamit! 🤦");
 				}
 				const checkAvailability = await fetch(
-					`http://localhost:3000/checkAvailability?userName=${document.getElementById("callTo").value}`,
+					`https://echo-land.herokuapp.com/checkAvailability?userName=${document.getElementById("callTo").value}`,
 				);
 				const resp = await checkAvailability.json();
 				if (resp.status === false) {
@@ -194,7 +194,7 @@
 					voiceActivityDetection: false,
 				};
 				console.log("getting servers");
-				const response = await fetch(`http://localhost:3000/breakTheIce`);
+				const response = await fetch(`https://echo-land.herokuapp.com/breakTheIce`);
 				const data = await response.json();
 				window.iceConfig = data.config;
 				console.log("server config", data.config);

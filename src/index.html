@@ -241,15 +241,15 @@
 			}
 
 			async function makeCall() {
-				document.getElementById("makeCall").innerText = "CALLING...";
 				if (window.isCalling) {
 					alert("Already Calling.");
 				}
-				window.isCalling = true;
 
 				if (!document.getElementById("callTo").value || document.getElementById("callTo").value == window.userName) {
 					return alert("Goddamit! 🤦");
 				}
+				document.getElementById("makeCall").innerText = "CALLING...";
+				window.isCalling = true;
 				const checkAvailability = await fetch(
 					`https://echo-land.herokuapp.com/checkAvailability?userName=${document.getElementById("callTo").value}`,
 				);

@@ -3,8 +3,7 @@ import * as http from "http";
 import * as bodyParser from "body-parser";
 import * as socketIO from "socket.io";
 import * as twilio from "twilio";
-import { TWILIO_SID } from "./constants";
-import { TWILIO_AUTH_TOKEN } from "./constants";
+import { TWILIO_SID, TWILIO_AUTH_TOKEN } from "./constants";
 const app = express();
 const server = http.createServer(app);
 const twilioClient = twilio(TWILIO_SID, TWILIO_AUTH_TOKEN);
@@ -73,7 +72,7 @@ io.on("connection", function(socket: SocketIO.Socket) {
 			}
 		}
 		users = users.filter(user => user.socketId !== socket.id);
-		console.log("user disconnected");
+		console.log("user got disconnected");
 	});
 
 	socket.on("connectCall", function(data) {

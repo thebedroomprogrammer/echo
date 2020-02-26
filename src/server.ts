@@ -2,6 +2,7 @@ import * as express from "express";
 import * as http from "http";
 import * as bodyParser from "body-parser";
 import * as socketIO from "socket.io";
+import * as cors from "cors";
 import * as twilio from "twilio";
 import { TWILIO_SID, TWILIO_AUTH_TOKEN } from "./constants";
 const app = express();
@@ -9,7 +10,7 @@ const server = http.createServer(app);
 const twilioClient = twilio(TWILIO_SID, TWILIO_AUTH_TOKEN);
 
 app.use(bodyParser.json());
-
+app.use(cors());
 server.listen(process.env.PORT || 3000);
 const io = socketIO(server);
 

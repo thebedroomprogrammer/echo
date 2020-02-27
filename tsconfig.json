@@ -1,19 +1,18 @@
 {
 	"compilerOptions": {
-		"target": "es6",
-		"module": "commonjs",
-		"isolatedModules": false,
-		"experimentalDecorators": true,
-		"emitDecoratorMetadata": true,
+		"target": "esNext",
+		"module": "esNext",
 		"declaration": false,
-		"noImplicitAny": false,
+		"allowJs": true,
 		"removeComments": true,
 		"noLib": false,
 		"preserveConstEnums": true,
-		"resolveJsonModule": true,
+		"sourceMap": true,
 		"suppressImplicitAnyIndexErrors": true,
-		"outDir": "build",
-		"baseUrl": "./src/"
+
+		"importHelpers": true,
+		"outDir": "dist",
+		"lib": ["webworker", "dom"]
 	},
 	"compileOnSave": false,
 	"buildOnSave": false,

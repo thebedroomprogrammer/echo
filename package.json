@@ -4,7 +4,6 @@
 	"description": "Signalling server written in Typescript and Node",
 	"main": "server.js",
 	"scripts": {
-		"build": "webpack",
 		"tsc": "tsc",
 		"postinstall": "npm run tsc && cp ./src/index.html ./build/index.html",
 		"watch:development": "nodemon",

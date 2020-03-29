@@ -98,7 +98,7 @@ app.get("/gamelist", function(_, res) {
 	return res.send({ success: true, msg: "Game List", data: GAME_LIST });
 });
 
-app.get("/gameBuyIn", function(req, res) {
+app.get("/gamebuyin", function(req, res) {
 	const gameCode = req.query.gameCode;
 	if (!gameCode) {
 		return res.send({ success: false, msg: "No Game Code Provided", data: null });
@@ -107,7 +107,7 @@ app.get("/gameBuyIn", function(req, res) {
 	}
 });
 
-app.get("/gameStars", function(req, res) {
+app.get("/gamestars", function(req, res) {
 	const gameCode = req.query.gameCode;
 	if (!gameCode) {
 		return res.send({ success: false, msg: "No Game Code Provided", data: null });

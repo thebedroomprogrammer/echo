@@ -103,7 +103,11 @@ app.get("/gamebuyin", function(req, res) {
 	if (!gameCode) {
 		return res.send({ success: false, msg: "No Game Code Provided", data: null });
 	} else {
-		return res.send({ success: true, msg: "Game BuyIn", data: GAME_DATA_BUYIN[req.query.gameCode] });
+		return res.send({
+			success: true,
+			msg: "Game BuyIn",
+			data: GAME_DATA_BUYIN[req.query.gameCode] ? GAME_DATA_BUYIN[req.query.gameCode] : null,
+		});
 	}
 });
 
@@ -112,7 +116,11 @@ app.get("/gamestars", function(req, res) {
 	if (!gameCode) {
 		return res.send({ success: false, msg: "No Game Code Provided", data: null });
 	} else {
-		return res.send({ success: true, msg: "Game BuyIn", data: GAME_DATA_STARS[req.query.gameCode] });
+		return res.send({
+			success: true,
+			msg: "Game BuyIn",
+			data: GAME_DATA_STARS[req.query.gameCode] ? GAME_DATA_STARS[req.query.gameCode] : null,
+		});
 	}
 });
 

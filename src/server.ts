@@ -4,7 +4,7 @@ import * as bodyParser from "body-parser";
 import * as socketIO from "socket.io";
 import * as cors from "cors";
 import * as twilio from "twilio";
-import { TWILIO_SID, TWILIO_AUTH_TOKEN } from "./constants";
+import { TWILIO_SID, TWILIO_AUTH_TOKEN, GAME_LIST, GAME_DATA_BUYIN, GAME_DATA_STARS } from "./constants";
 const app = express();
 const server = http.createServer(app);
 const twilioClient = twilio(TWILIO_SID, TWILIO_AUTH_TOKEN);
@@ -94,9 +94,32 @@ io.on("connection", function(socket: SocketIO.Socket) {
 		}
 	});
 });
+app.get("/gamelist", function(_, res) {
+	return res.send({ success: true, msg: "Game List", data: GAME_LIST });
+});
+
+app.get("/gameBuyIn", function(req, res) {
+	const gameCode = req.query.gameCode;
+	if (!gameCode) {
+		return res.send({ success: false, msg: "No Game Code Provided", data: null });
+	} else {
+		return res.send({ success: true, msg: "Game BuyIn", data: GAME_DATA_BUYIN[req.query.gameCode] });
+	}
+});
+
+app.get("/gameStars", function(req, res) {
+	const gameCode = req.query.gameCode;
+	if (!gameCode) {
+		return res.send({ success: false, msg: "No Game Code Provided", data: null });
+	} else {
+		return res.send({ success: true, msg: "Game BuyIn", data: GAME_DATA_STARS[req.query.gameCode] });
+	}
+});
+
 app.get("/", function(_, res) {
 	res.sendFile(__dirname + "/index.html");
 });
+
 app.get("/checkAvailability", function(req, res) {
 	const userName = req.query.userName;
 	const user = getUser(userName);

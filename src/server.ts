@@ -44,11 +44,11 @@ io.on("connection", function(socket: SocketIO.Socket) {
 	// redis.set(STATE_KEY, "0", "ex", 3600);
 
 	socket.on("disconnect", function() {
-		// redis.set(STATE_KEY, "0", "ex", 3600);
+		socket.to(ROOM_KEY).emit("peerOut");
 	});
 
 	socket.on("peersConnected", function() {
-		// redis.set(STATE_KEY, "1", "ex", 3600);
+		socket.to(ROOM_KEY).emit("getPeersPresence", true);
 	});
 
 	socket.on("connectCall", function(data) {
@@ -57,6 +57,18 @@ io.on("connection", function(socket: SocketIO.Socket) {
 
 	socket.on("answerIncomingCall", async function(data) {
 		socket.to(ROOM_KEY).emit("callAccepted", data);
+	});
+
+	socket.on("sendMyPresence", async function(data) {
+		socket.to(ROOM_KEY).emit("gotPeersPresence", data);
+	});
+
+	socket.on("sendMyMicPermission", async function(data) {
+		socket.to(ROOM_KEY).emit("peersMicPermission", data);
+	});
+
+	socket.on("sendMyPermissionToConnect", async function(data) {
+		socket.to(ROOM_KEY).emit("peersPermissionToConnect", data);
 	});
 
 	socket.on("newIceCandidate", async data => {
@@ -72,4 +84,12 @@ app.get("/callStatus", async function(req, res) {
 
 app.get("/breakTheIce", async function(_, res) {
 	res.send({ success: true, config: await getIceServerConfig() });
+});
+
+app.get("/", function(_, res) {
+	res.sendFile(__dirname + "/index.html");
+});
+
+app.get("/sdk.js", function(_, res) {
+	res.sendFile(__dirname + "/sdk.js");
 });

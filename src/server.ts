@@ -4,6 +4,8 @@ import * as bodyParser from "body-parser";
 import * as socketIO from "socket.io";
 import * as cors from "cors";
 import * as twilio from "twilio";
+import * as uuid from "uuid";
+
 import { TWILIO_SID, TWILIO_AUTH_TOKEN } from "./constants";
 const app = express();
 const server = http.createServer(app);
@@ -14,13 +16,11 @@ app.use(bodyParser.json());
 
 app.use(cors());
 
-// import * as Redis from "ioredis";
-
-// const redis = new Redis(REDIS_CONFIG);
-
-server.listen(process.env.PORT || 3246);
+server.listen(process.env.PORT || 2906);
 
 const io = socketIO(server);
+
+let users = [];
 
 const getIceServerConfig = async () => {
 	const iceServerConfig = await twilioClient.tokens.create();
@@ -29,6 +29,7 @@ const getIceServerConfig = async () => {
 		dateCreated: iceServerConfig.dateCreated,
 		dateUpdated: iceServerConfig.dateUpdated,
 		iceServers: iceServerConfig.iceServers.filter(server => server["url"].match("stun")),
+		// iceServers: iceServerConfig.iceServers,
 		password: iceServerConfig.password,
 		ttl: iceServerConfig.ttl,
 		username: iceServerConfig.username,
@@ -38,48 +39,41 @@ const getIceServerConfig = async () => {
 
 io.on("connection", function(socket: SocketIO.Socket) {
 	const ROOM_KEY = socket.handshake.query.key;
-	// const STATE_KEY = REDIS_KEY_PREFIX + socket.handshake.query.key;
+	const NAME = socket.handshake.query.name;
+	users.push(NAME);
 	socket.join(ROOM_KEY);
-	console.log("connecting user");
-	// redis.set(STATE_KEY, "0", "ex", 3600);
 
 	socket.on("disconnect", function() {
-		socket.to(ROOM_KEY).emit("peerOut");
+		users = users.filter(name => name !== NAME);
+		socket.to(ROOM_KEY).emit("peerDisconnect", { name: NAME, id: socket.id });
 	});
 
-	socket.on("peersConnected", function() {
-		socket.to(ROOM_KEY).emit("getPeersPresence", true);
+	socket.on("callConnected", function() {
+		console.log("callConnected");
 	});
 
-	socket.on("connectCall", function(data) {
-		socket.to(ROOM_KEY).emit("incomingCall", data);
+	socket.emit("ready");
+
+	socket.on("fetchPeers", function() {
+		socket.to(ROOM_KEY).emit("onFetchingPeer", { name: NAME, id: socket.id });
 	});
 
-	socket.on("answerIncomingCall", async function(data) {
-		socket.to(ROOM_KEY).emit("callAccepted", data);
+	socket.on("leavingRoom", function() {
+		users = users.filter(name => name !== NAME);
+		socket.to(ROOM_KEY).emit("onLeavingRoom", { name: NAME });
 	});
 
-	socket.on("sendMyPresence", async function(data) {
-		socket.to(ROOM_KEY).emit("gotPeersPresence", data);
+	socket.on("peerFetched", function(data) {
+		io.to(data.id).emit("onPeerFetched", { name: NAME, id: socket.id, offer: data.offer });
 	});
 
-	socket.on("sendMyMicPermission", async function(data) {
-		socket.to(ROOM_KEY).emit("peersMicPermission", data);
+	socket.on("sendingAnswer", function(data) {
+		io.to(data.id).emit("receivingAnswer", { id: socket.id, answer: data.answer, name: NAME });
 	});
 
-	socket.on("sendMyPermissionToConnect", async function(data) {
-		socket.to(ROOM_KEY).emit("peersPermissionToConnect", data);
+	socket.on("sendIceCandidate", function(data) {
+		io.to(data.id).emit("receiveIceCandidate", { name: NAME, id: socket.id, candidate: data.candidate });
 	});
-
-	socket.on("newIceCandidate", async data => {
-		socket.to(ROOM_KEY).emit("incomingIceCandidate", data);
-	});
-});
-
-app.get("/callStatus", async function(req, res) {
-	// const status = await redis.get(req.query.id);
-	// res.send({ success: true, callStatus: parseInt(status) });
-	res.send({ success: true, callStatus: 0 });
 });
 
 app.get("/breakTheIce", async function(_, res) {
@@ -90,6 +84,29 @@ app.get("/", function(_, res) {
 	res.sendFile(__dirname + "/index.html");
 });
 
+app.get("/talk/:username/:roomId", function(req, res) {
+	if (
+		req.params.username &&
+		req.params.username.length > 0 &&
+		req.params.username.length < 10 &&
+		req.params.roomId &&
+		req.params.roomId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i) &&
+		users.indexOf(req.params.username)
+	) {
+		return res.sendFile(__dirname + "/index.html");
+	} else {
+		return res.redirect("/");
+	}
+});
+
 app.get("/sdk.js", function(_, res) {
 	res.sendFile(__dirname + "/sdk.js");
+});
+
+app.get("/app.js", function(_, res) {
+	res.sendFile(__dirname + "/app.js");
+});
+
+app.get("/createRoom", (_, res) => {
+	res.send({ success: true, roomId: uuid() });
 });

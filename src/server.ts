@@ -56,6 +56,7 @@ io.on("connection", function(socket: SocketIO.Socket) {
 
 	socket.on("fetchPeers", function() {
 		socket.to(ROOM_KEY).emit("onFetchingPeer", { name: NAME, id: socket.id });
+		socket.to(ROOM_KEY).emit("signalPeerToConnect", { name: NAME, id: socket.id });
 	});
 
 	socket.on("leavingRoom", function() {

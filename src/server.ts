@@ -48,6 +48,10 @@ io.on("connection", function(socket: SocketIO.Socket) {
 		socket.to(ROOM_KEY).emit("peerDisconnect", { name: NAME, id: socket.id });
 	});
 
+	socket.on("micStatusChange", function(data) {
+		socket.to(ROOM_KEY).emit("onMicStatusChange", { name: NAME, id: socket.id, micStatus: data.micStatus });
+	});
+
 	socket.on("callConnected", function() {
 		console.log("callConnected");
 	});
